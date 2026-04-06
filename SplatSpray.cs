@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("SplatSpray", "jerky", "1.0.0")]
+    [Info("SplatSpray", "jerky+claude", "1.0.0")]
     [Description("Splat paintball territory game")]
     class SplatSpray : RustPlugin
     {
