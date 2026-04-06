@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Oxide.Plugins
 {
-    [Info("SplatSpray", "jerky+claude", "1.0.0")]
+    [Info("SplatSpray", "jerky+claude", "1.1.0")]
     [Description("Splat paintball territory game")]
     class SplatSpray : RustPlugin
     {
@@ -143,11 +143,23 @@ namespace Oxide.Plugins
         // 着弾検出
         // ================================================================
 
-        // フック1: エンティティ（建物・床など）への着弾
+        // フック1: エンティティ（建物・床・プレイヤーなど）への着弾
         void OnEntityTakeDamage(BaseCombatEntity entity, HitInfo info)
         {
             if (info?.Weapon == null || info.InitiatorPlayer == null) return;
             if (!(info.Weapon is PaintballGun)) return;
+
+            // ゲーム中にプレイヤーにヘッドショットした場合はラグドール
+            if (_gameState == GameState.Running && entity is BasePlayer victim && info.isHeadshot)
+            {
+                if (victim != info.InitiatorPlayer && victim.IsAlive() && !victim.IsNpc)
+                {
+                    Vector3 knockback = (victim.transform.position - info.InitiatorPlayer.transform.position).normalized * 3f;
+                    knockback.y = 2f;
+                    victim.Ragdoll(knockback);
+                }
+            }
+
             if (info.HitNormalWorld.y < FLOOR_THRESHOLD) return; // 水平面のみ
 
             int colorIndex = info.Weapon.GetCachedItem()?.instanceData?.dataInt ?? 0;
